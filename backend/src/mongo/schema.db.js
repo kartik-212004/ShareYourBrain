@@ -40,4 +40,3 @@ export const users = mongoose.model("user", userSchema);
 export const tag = mongoose.model("tags", tagSchema);
 export const link = mongoose.model("link", linkSchema);
 export const content = mongoose.model("content", contentSchema);
- 

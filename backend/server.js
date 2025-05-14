@@ -68,16 +68,37 @@ app.post("/api/v1/content", middleware, async (req, res) => {
     res.status(200).json({ message: "success" })
 
   } catch (error) {
-    console.log(error)
+    return res.status(411).json({ error: error.message });
   }
 });
 
-app.get("/api/v1/content", middleware, async (req, res) => {
+app.get("/api/v1/content/:userId", middleware, async (req, res) => {
   try {
-  } catch (error) {
+    const userId = req.params.userId
+    let userContent = await content.find({ userId: userId }).populate('userId', "email")
+    res.json({ message: "success", data: userContent })
 
+  } catch (error) {
+    return res.status(411).json({ error: error.message });
   }
 });
+
+app.delete("/api/v1/content", middleware, async (req, res) => {
+  try {
+    const { userId, id } = req.body
+    await content.deleteMany({
+      userId: userId,
+      _id: id,
+    })
+    res.json({
+      message: "Content deleted successfully"
+    })
+  } catch (error) {
+    return res.status(411).json({ error: error.message });
+  }
+});
+
+
 
 app.listen(process.env.PORT, () => {
   console.log("server is running");
