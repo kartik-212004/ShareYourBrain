@@ -66,4 +66,10 @@ app.post("api/v1/content", async (req, res) => {
   try {
   } catch (error) {}
 });
+
+app.get("api/v1/content", async (req, res) => {
+  try {
+  } catch (error) {}
+});
+
 app.listen(process.env.PORT!);
