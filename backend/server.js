@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken"
 import dotenv from "dotenv";
 import { users } from "./src/mongo/schema.db.js";
 import { middleware } from "./src/middleware/middleware.js";
+import { content } from "./src/mongo/schema.db.js";
 import { JWT_SECRET } from "./src/config/config.js";
 import { z } from "zod";
 dotenv.config()
@@ -47,6 +48,7 @@ app.post("/api/v1/signin", async (req, res) => {
       return res.json({ message: "Account Not Found", status: 411 });
     }
     const token = jwt.sign({ id: isEmailFound._id }, JWT_SECRET);
+    console.log(token)
     res.json({ message: "Logged in", token: token, status: 200 });
 
   } catch (error) {
@@ -56,14 +58,25 @@ app.post("/api/v1/signin", async (req, res) => {
 
 app.post("/api/v1/content", middleware, async (req, res) => {
   try {
+    let { title, links, tags } = req.body
+    await content.create({
+      link: links,
+      title: title,
+      userId: req.userId,
+      tags: tags
+    })
+    res.status(200).json({ message: "success" })
 
-    // let { title, links, tags }  
-  } catch (error) { }
+  } catch (error) {
+    console.log(error)
+  }
 });
 
 app.get("/api/v1/content", middleware, async (req, res) => {
   try {
-  } catch (error) { }
+  } catch (error) {
+
+  }
 });
 
 app.listen(process.env.PORT, () => {
