@@ -2,13 +2,15 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import { users } from "./src/mongo/schema.db.js";
-import path from "path";
+import { middleware } from "./src/middleware/middleware.js";
+import { JWT_SECRET } from "./src/config/config.js";
 import { z } from "zod";
 dotenv.config()
 
 const app = express();
 mongoose.connect(process.env.MONGO_URL);
 app.use(express.json());
+app.use(middleware)
 
 const zodUser = z.object({
   email: z.string().email(),
@@ -22,15 +24,13 @@ app.post("/api/v1/signup", async (req, res) => {
 
     const existingUser = await users.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(411).json({ message: "User already exists" });
     }
-
-    const newUser = new users({ email, password });
-    await newUser.save();
+    await users.create({ email, password });
 
     return res.status(200).json({ message: "Account successfully created" });
   } catch (error) {
-    return res.status(400).json({ error: error.message });
+    return res.status(411).json({ error: error.message });
   }
 });
 
@@ -43,10 +43,12 @@ app.post("/api/v1/signin", async (req, res) => {
       password: password,
     });
     console.log(isEmailFound);
-    if (isEmailFound) res.json({ message: "Logged in", status: 200 });
-    else {
-      res.json({ message: "Account Not Found", status: 400 });
+    if (!isEmailFound) {
+      return res.json({ message: "Account Not Found", status: 411 });
     }
+
+    res.json({ message: "Logged in", status: 200 });
+
   } catch (error) { }
 });
 
