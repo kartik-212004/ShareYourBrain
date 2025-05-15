@@ -7,12 +7,13 @@ import { middleware } from "./src/middleware/middleware.js";
 import { content } from "./src/mongo/schema.db.js";
 import { JWT_SECRET } from "./src/config/config.js";
 import { z } from "zod";
+import cors from "cors";
 dotenv.config()
 
 const app = express();
 mongoose.connect(process.env.MONGO_URL);
 app.use(express.json());
-
+app.use(cors());
 const zodUser = z.object({
   email: z.string().email(),
   password: z.string().min(6, "Short password"),
@@ -101,5 +102,5 @@ app.delete("/api/v1/content", middleware, async (req, res) => {
 
 
 app.listen(process.env.PORT, () => {
-  console.log("server is running");
+  console.log(`server is running on port ${process.env.PORT}`);
 });

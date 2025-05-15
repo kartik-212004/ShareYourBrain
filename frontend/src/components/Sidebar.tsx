@@ -1,5 +1,7 @@
 import { Link2, Twitter, FileVideo, File, Tags, Brain } from "lucide-react";
-
+import { useNavigate } from "react-router-dom";
+import { LogOut } from "lucide-react";
+import { Button } from "./ui/button";
 function Sidebar() {
   const menuItems = [
     { icon: <Twitter className="w-5 h-5" />, label: "Twitter" },
@@ -8,7 +10,12 @@ function Sidebar() {
     { icon: <Tags className="w-5 h-5" />, label: "Tags" },
     { icon: <Link2 className="w-5 h-5" />, label: "Links" },
   ];
+  const navigate = useNavigate();
 
+  const logout = () => {
+    localStorage.removeItem("token");
+    navigate("/signin");
+  };
   return (
     <nav className="w-64 h-screen border-r border-gray-200 flex flex-col bg-white shadow-sm">
       <div className="p-5">
@@ -30,6 +37,15 @@ function Sidebar() {
           </li>
         ))}
       </ul>
+      <div className="p-5 flex justify-center">
+        <Button
+          onClick={logout}
+          className="bg-red-500 max-w-40 w-full text-zinc-100 font-extrabold hover:bg-red-600"
+        >
+          <LogOut />
+          Logout
+        </Button>
+      </div>
     </nav>
   );
 }
