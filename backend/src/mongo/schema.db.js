@@ -32,7 +32,7 @@ const linkSchema = new mongoose.Schema({
 const contentSchema = new mongoose.Schema({
   title: String,
   link: String,
-  tags: [{ type: mongoose.Types.ObjectId, ref: "tags" }],
+  tags: [{ type: String, ref: "tags" }],
   userId: { type: mongoose.Types.ObjectId, ref: "user", required: true }
 });
 

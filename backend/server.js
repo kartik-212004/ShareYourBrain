@@ -59,9 +59,10 @@ app.post("/api/v1/signin", async (req, res) => {
 
 app.post("/api/v1/content", middleware, async (req, res) => {
   try {
-    let { title, links, tags } = req.body
+    let { title, link, tags } = req.body
+    console.log(req.body)
     await content.create({
-      link: links,
+      link: link,
       title: title,
       userId: req.userId,
       tags: tags
@@ -69,6 +70,7 @@ app.post("/api/v1/content", middleware, async (req, res) => {
     res.status(200).json({ message: "success" })
 
   } catch (error) {
+    console.log(error)
     return res.status(411).json({ error: error.message });
   }
 });
@@ -77,9 +79,11 @@ app.get("/api/v1/content/:userId", middleware, async (req, res) => {
   try {
     const userId = req.params.userId
     let userContent = await content.find({ userId: userId }).populate('userId', "email")
-    res.json({ message: "success", data: userContent })
+    console.log(userContent)
+    res.json({ message: "success", data: userContent, status: 200 })
 
   } catch (error) {
+    console.log(error)
     return res.status(411).json({ error: error.message });
   }
 });
