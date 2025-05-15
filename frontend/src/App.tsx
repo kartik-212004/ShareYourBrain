@@ -1,7 +1,7 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Home from "./components/home";
-import { SigninForm } from "./components/signup-form";
-import { SignupForm } from "./components/signin-form";
+import { SigninForm } from "./components/signin-form";
+import { SignupForm } from "./components/signup-form";
 
 function App() {
   return (

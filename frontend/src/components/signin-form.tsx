@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 const apiUrl = import.meta.env.VITE_API_URL;
+
+import axios from "axios";
 import {
   Card,
   CardContent,
@@ -15,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
 
-export function SignupForm({
+export function SigninForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
@@ -24,28 +25,37 @@ export function SignupForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
-  if (localStorage.getItem("token")) {
-    navigate("/");
-  }
-  console.log(email, password);
+  useEffect(() => {
+    if (localStorage.getItem("token")) {
+      navigate("/");
+      console.log(localStorage.getItem("token"));
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const response = await axios.post(`${apiUrl}/api/v1/signup`, {
+      const response = await axios.post(`${apiUrl}/api/v1/signin`, {
         email: email,
         password: password,
       });
       console.log(response);
-      setIsSubmitting(false);
-      localStorage.setItem("token", response.data.token);
-      navigate("/signin");
+      if (response.status === 200) {
+        localStorage.setItem("token", response.data.token);
+        navigate("/");
+      }
     } catch (error) {
-      console.error("Signup error:", error);
+      console.error("Login error:", error);
+    } finally {
       setIsSubmitting(false);
     }
   };
+
+  if (localStorage.getItem("token")) {
+    navigate("/");
+    return;
+  }
 
   return (
     <div
@@ -58,12 +68,17 @@ export function SignupForm({
       <div className="w-full max-w-md">
         <Card>
           <CardHeader className="text-center">
-            <CardTitle className="text-xl">Create an Account</CardTitle>
-            <CardDescription>Sign up to get started</CardDescription>
+            <CardTitle className="text-xl">Welcome back</CardTitle>
+            <CardDescription>Login to your account</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit}>
               <div className="grid gap-6">
+                <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
+                  <span className="bg-card text-muted-foreground relative z-10 px-2">
+                    Log In
+                  </span>
+                </div>
                 <div className="grid gap-6">
                   <div className="grid gap-3">
                     <Label htmlFor="email">Email</Label>
@@ -77,7 +92,15 @@ export function SignupForm({
                     />
                   </div>
                   <div className="grid gap-3">
-                    <Label htmlFor="password">Password</Label>
+                    <div className="flex items-center">
+                      <Label htmlFor="password">Password</Label>
+                      <Link
+                        to="/forgot-password"
+                        className="ml-auto text-sm underline-offset-4 hover:underline"
+                      >
+                        Forgot your password?
+                      </Link>
+                    </div>
                     <Input
                       id="password"
                       type="password"
@@ -91,13 +114,13 @@ export function SignupForm({
                     className="w-full"
                     disabled={isSubmitting}
                   >
-                    {isSubmitting ? "Creating account..." : "Sign Up"}
+                    {isSubmitting ? "Logging in..." : "Login"}
                   </Button>
                 </div>
                 <div className="text-center text-sm">
-                  Already have an account?{" "}
-                  <Link to="/login" className="underline underline-offset-4">
-                    Log in
+                  Don&apos;t have an account?{" "}
+                  <Link to="/signup" className="underline underline-offset-4">
+                    Sign up
                   </Link>
                 </div>
               </div>
@@ -105,7 +128,7 @@ export function SignupForm({
           </CardContent>
         </Card>
         <div className="text-muted-foreground *:hover:text-primary text-center text-xs text-balance mt-4">
-          By clicking sign up, you agree to our{" "}
+          By clicking continue, you agree to our{" "}
           <Link to="/terms">Terms of Service</Link> and{" "}
           <Link to="/privacy">Privacy Policy</Link>.
         </div>
