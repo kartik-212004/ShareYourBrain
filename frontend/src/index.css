@@ -132,8 +132,8 @@
 
 @layer components
 {
-  .hover {
-  @apply group-hover:text-blue-600;
+  .blue-color {
+  @apply hover:text-blue-600;
 }
 }
 

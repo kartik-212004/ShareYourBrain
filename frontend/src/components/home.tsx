@@ -5,6 +5,7 @@ import { jwtDecode } from "jwt-decode";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import { Input } from "./ui/input";
+import { Share2Icon, Trash2, Copy } from "lucide-react";
 import { Toaster } from "sonner";
 import { Label } from "./ui/label";
 import { Button } from "./ui/button";
@@ -17,6 +18,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogClose,
 } from "@/components/ui/dialog";
 
 interface TokenPayload {
@@ -31,6 +33,8 @@ interface Content {
 
 export default function Home() {
   const navigate = useNavigate();
+  const [shareLink, setShareLink] = useState<string | null>(null);
+  const [shareOpen, setShareOpen] = useState(false);
   const { isAuthenticated, token } = useAuth();
   const [content, setContent] = useState<Content[] | null>(null);
   const [error, setError] = useState("");
@@ -77,7 +81,6 @@ export default function Home() {
       const response = await axios.get(`${apiUrl}/api/v1/content/${userId}`, {
         headers: { Authorization: `Bearer ${tokens}` },
       });
-      // console.log(response.data);
       setContent(response.data.data);
       if (response.data.status === 200) {
         toast.success("Content fetched successfully");
@@ -90,10 +93,26 @@ export default function Home() {
       toast.error("Error fetching content");
     }
   }
+
+  async function deleteContent(id: string) {
+    try {
+      const tokens = localStorage.getItem("token");
+      console.log(id);
+      await axios.delete(`${apiUrl}/api/v1/content/${id}`, {
+        headers: { Authorization: `Bearer ${tokens}` },
+      });
+      toast.success("Content deleted successfully");
+      setIncrement((prev) => prev + 1);
+    } catch (error) {
+      console.log(error);
+      toast.error("Error deleting content");
+    }
+  }
+
   async function postContent() {
     try {
       const tokens = localStorage.getItem("token");
-      const response = await axios.post(
+      await axios.post(
         `${apiUrl}/api/v1/content`,
         { title: title, link: link, tags: tags },
         {
@@ -125,6 +144,7 @@ export default function Home() {
     }
   }
   console.log(content);
+
   return (
     <>
       <div className="flex">
@@ -166,10 +186,26 @@ export default function Home() {
                           className="w-full p-2 h-56"
                         ></iframe>
                       </div>
-                      <div className="p-4">
-                        <span className="text-sm px-2 py-1 rounded-3xl bg-button2 text-white">
-                          {cont.tags}
-                        </span>
+                      <div className="p-4 flex justify-between">
+                        <div className="flex flex-row space-x-2">
+                          {cont.tags.map((e) => (
+                            <span className="text-sm px-2 py-1 rounded-md bg-button2 text-white">
+                              {e}
+                            </span>
+                          ))}
+                        </div>
+                        <div className="space-x-4 flex flex-row">
+                          <Trash2
+                            onClick={() => {
+                              deleteContent(cont._id);
+                            }}
+                            className="size-5 blue-color cursor-pointer"
+                          />
+                          <Share2Icon
+                            onClick={() => setShareOpen((e) => !e)}
+                            className="size-5 cursor-pointer blue-color"
+                          />
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -229,6 +265,40 @@ export default function Home() {
                 <Button onClick={postContent} type="submit">
                   Save
                 </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={shareOpen} onOpenChange={setShareOpen}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Share link</DialogTitle>
+                <DialogDescription>
+                  Anyone who has this link will be able to view this.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex items-center space-x-2">
+                <div className="grid flex-1 gap-2">
+                  <Label htmlFor="link" className="sr-only">
+                    Link
+                  </Label>
+                  <Input
+                    id="link"
+                    defaultValue="https://ui.shadcn.com/docs/installation"
+                    readOnly
+                  />
+                </div>
+                <Button type="submit" size="sm" className="px-3">
+                  <span className="sr-only">Copy</span>
+                  <Copy />
+                </Button>
+              </div>
+              <DialogFooter className="sm:justify-start">
+                <DialogClose asChild>
+                  <Button type="button" variant="secondary">
+                    Close
+                  </Button>
+                </DialogClose>
               </DialogFooter>
             </DialogContent>
           </Dialog>

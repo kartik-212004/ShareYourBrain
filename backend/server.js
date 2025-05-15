@@ -88,11 +88,11 @@ app.get("/api/v1/content/:userId", middleware, async (req, res) => {
   }
 });
 
-app.delete("/api/v1/content", middleware, async (req, res) => {
+app.delete("/api/v1/content/:id", middleware, async (req, res) => {
   try {
-    const { userId, id } = req.body
+    const id = req.params.id
+    console.log(id)
     await content.deleteMany({
-      userId: userId,
       _id: id,
     })
     res.json({
