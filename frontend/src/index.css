@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "./assets/css/satoshi.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -115,6 +116,23 @@
     @apply border-border outline-ring/50;
   }
   body {
+  font-family: Satoshi-Regular;
     @apply bg-background text-foreground;
   }
 }
+@theme {
+ --text-t1: 32px;
+  --color-text1:#6E7170
+  --text-t2: 16px;
+  --color-night: #101010;
+  --color--hover{
+  }
+}
+
+@layer components
+{
+  .hover {
+  @apply group-hover:text-blue-600;
+}
+}
+
