@@ -29,6 +29,10 @@ interface Content {
   title: string;
   tags: string[];
   link: string;
+  userId: {
+    _id: string;
+    email: string;
+  };
 }
 
 export default function Home() {
@@ -83,7 +87,13 @@ export default function Home() {
       });
       setContent(response.data.data);
       if (response.data.status === 200) {
-        toast.success("Content fetched successfully");
+        if (response.data.data.length === 0) {
+          toast.error("Nothing to show", {
+            description: "Add some content to your second brain",
+          });
+        } else {
+          toast.success("Content fetched successfully");
+        }
       } else {
         toast.error("Error fetching content");
       }
@@ -97,7 +107,6 @@ export default function Home() {
   async function deleteContent(id: string) {
     try {
       const tokens = localStorage.getItem("token");
-      console.log(id);
       await axios.delete(`${apiUrl}/api/v1/content/${id}`, {
         headers: { Authorization: `Bearer ${tokens}` },
       });
@@ -112,39 +121,41 @@ export default function Home() {
   async function postContent() {
     try {
       const tokens = localStorage.getItem("token");
-      await axios.post(
+      const { data } = await axios.post(
         `${apiUrl}/api/v1/content`,
         { title: title, link: link, tags: tags },
         {
           headers: { Authorization: `Bearer ${tokens}` },
         }
       );
-
       setOpen((e) => !e);
 
       setIncrement((prev) => prev + 1);
       toast.success("Content added successfully");
-
-      if (userId) {
-        await getContent(userId);
-      } else {
-        const token = localStorage.getItem("token");
-        if (token) {
-          const decodedToken = jwtDecode<TokenPayload>(token);
-          const id = decodedToken.id;
-          if (id) {
-            await getContent(id);
-          }
-        }
-      }
     } catch (err) {
       console.error("Error adding content:", err);
       setError("Error adding content");
       toast.error("Error adding content");
     }
   }
-  console.log(content);
 
+  async function handleShare(id: string, userId: string) {
+    const tokens = localStorage.getItem("token");
+
+    const response = await axios.post(
+      `${apiUrl}/api/v1/content/share`,
+      {
+        id: id,
+        userId: userId,
+      },
+      {
+        headers: { Authorization: `Bearer ${tokens}` },
+      }
+    );
+    setShareLink(response.data.data.link);
+    setShareOpen((e) => !e);
+    console.log(response.data.data.link, "response.data.data.link");
+  }
   return (
     <>
       <div className="flex">
@@ -153,9 +164,6 @@ export default function Home() {
           <div className="flex flex-row justify-between items-center">
             <h1 className="text-t1 font-semibold">All Notes</h1>
             <div className="flex flex-row space-x-4 font-semibold">
-              <Button className="bg-button2 font-medium hover:text-white hover:bg-[#9c97f1]">
-                Share Brain
-              </Button>
               <Button
                 onClick={() => {
                   setOpen((e) => !e);
@@ -167,10 +175,10 @@ export default function Home() {
             </div>
           </div>
           <div className="mt-10">
-            {error ? (
-              <p className="text-red-500">{error}</p>
+            {content && content.length === 0 ? (
+              <p className="text-2xl font-medium">No Brains yet</p>
             ) : (
-              <div className="grid grid-cols-3 ">
+              <div className="grid gap-y-3 grid-cols-3 ">
                 {content &&
                   content.map((cont) => (
                     <div
@@ -188,8 +196,11 @@ export default function Home() {
                       </div>
                       <div className="p-4 flex justify-between">
                         <div className="flex flex-row space-x-2">
-                          {cont.tags.map((e) => (
-                            <span className="text-sm px-2 py-1 rounded-md bg-button2 text-white">
+                          {cont.tags.map((e, i) => (
+                            <span
+                              key={i}
+                              className="text-sm px-2 py-1 rounded-md bg-button2 text-white"
+                            >
                               {e}
                             </span>
                           ))}
@@ -202,7 +213,9 @@ export default function Home() {
                             className="size-5 blue-color cursor-pointer"
                           />
                           <Share2Icon
-                            onClick={() => setShareOpen((e) => !e)}
+                            onClick={() => {
+                              handleShare(cont._id, cont.userId._id);
+                            }}
                             className="size-5 cursor-pointer blue-color"
                           />
                         </div>
@@ -282,11 +295,7 @@ export default function Home() {
                   <Label htmlFor="link" className="sr-only">
                     Link
                   </Label>
-                  <Input
-                    id="link"
-                    defaultValue="https://ui.shadcn.com/docs/installation"
-                    readOnly
-                  />
+                  <Input id="link" value={shareLink!} readOnly />
                 </div>
                 <Button type="submit" size="sm" className="px-3">
                   <span className="sr-only">Copy</span>

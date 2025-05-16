@@ -28,11 +28,10 @@ export function SignupForm({
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const response = await axios.post(`${apiUrl}/api/v1/signup`, {
+      await axios.post(`${apiUrl}/api/v1/signup`, {
         email: email,
         password: password,
       });
-      console.log(response);
       setIsSubmitting(false);
       navigate("/signin");
     } catch (error) {

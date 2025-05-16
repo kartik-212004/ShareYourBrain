@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 const userSchema = new mongoose.Schema({
   email: {
     type: String,
-    requied: true,
+    required: true,
     unique: true,
   },
   password: {
@@ -24,8 +24,13 @@ const linkSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  // visibility: {
+  //   type: Boolean,
+  //   required: true,
+  //   default: false,
+  // },
   userId: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId, ref: "user", required: true
   },
 });
 

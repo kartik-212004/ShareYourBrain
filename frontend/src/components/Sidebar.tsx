@@ -2,7 +2,6 @@ import { Link2, Twitter, FileVideo, File, Tags, Brain } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
 import { Button } from "./ui/button";
-import { useAuth } from "@/hooks/use-auth";
 function Sidebar() {
   const menuItems = [
     { icon: <Twitter className="w-5 h-5" />, label: "Twitter" },
@@ -12,8 +11,6 @@ function Sidebar() {
     { icon: <Link2 className="w-5 h-5" />, label: "Links" },
   ];
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
-  console.log(isAuthenticated);
   const logout = () => {
     localStorage.removeItem("token");
     navigate("/signin");

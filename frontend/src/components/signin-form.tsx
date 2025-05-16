@@ -28,7 +28,6 @@ export function SigninForm({
   useEffect(() => {
     if (localStorage.getItem("token")) {
       navigate("/");
-      console.log(localStorage.getItem("token"));
     }
   }, []);
 
@@ -40,7 +39,6 @@ export function SigninForm({
         email: email,
         password: password,
       });
-      console.log(response);
       if (response.status === 200) {
         localStorage.setItem("token", response.data.token);
         navigate("/");
