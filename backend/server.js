@@ -60,13 +60,13 @@ app.post("/api/v1/signin", async (req, res) => {
 app.post("/api/v1/content", middleware, async (req, res) => {
   try {
     let { title, link, tags } = req.body
-    await content.create({
+    const data = await content.create({
       link: link,
       title: title,
       userId: req.userId,
       tags: tags
     })
-    res.status(200).json({ message: "success" })
+    res.status(200).json({ message: "success", data: data })
 
   } catch (error) {
     console.log(error)
@@ -100,15 +100,12 @@ app.delete("/api/v1/content/:id", middleware, async (req, res) => {
   }
 });
 
-app.post("/api/v1/content/share/id", async (req, res) => {
+app.get("/api/v1/content/share/:id", async (req, res) => {
   try {
-    const { id, userId } = req.body
+    const { hash } = req.body
     const response = await link.find({
-      hash: id,
-      userId: userId
+      hash: hash,
     }).populate("userId", "email");
-
-    console.log(response, "getting content link");
 
     res.json({ message: "Successfully fetched content", data: response, status: 200 });
   } catch (error) {
@@ -119,12 +116,11 @@ app.post("/api/v1/content/share/id", async (req, res) => {
 app.post("/api/v1/content/share/", middleware, async (req, res) => {
   try {
     const { id, userId } = req.body;
-    await link.create({
+    const response = await link.create({
       hash: id,
       userId: userId
     });
-    res.json({ message: "Successfully created link", status: 200, data: { id, userId } });
-    console.log(id);
+    res.json({ message: "Successfully created link", status: 200, response });
   } catch (error) {
     return res.status(411).json({ error: error.message });
   }

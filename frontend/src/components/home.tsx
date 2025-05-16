@@ -11,6 +11,7 @@ import { Label } from "./ui/label";
 import { Button } from "./ui/button";
 import axios from "axios";
 const apiUrl = import.meta.env.VITE_API_URL;
+const apiFrontend = import.meta.env.VITE_API_URL_FRONTEND;
 import {
   Dialog,
   DialogContent,
@@ -41,12 +42,10 @@ export default function Home() {
   const [shareOpen, setShareOpen] = useState(false);
   const { isAuthenticated, token } = useAuth();
   const [content, setContent] = useState<Content[] | null>(null);
-  const [error, setError] = useState("");
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState<string | null>(null);
   const [link, setLink] = useState<string | null>(null);
   const [tags, setTags] = useState<string[] | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
   const [increment, setIncrement] = useState(0);
   useEffect(() => {
     if (!isAuthenticated) {
@@ -65,7 +64,6 @@ export default function Home() {
             const userId = decodedToken.id;
             if (userId) {
               await getContent(userId);
-              setUserId(userId);
             } else {
               console.error("No user ID found in token");
             }
@@ -99,7 +97,6 @@ export default function Home() {
       }
     } catch (err) {
       console.error("Error fetching content:", err);
-      setError("Error loading content");
       toast.error("Error fetching content");
     }
   }
@@ -131,30 +128,51 @@ export default function Home() {
       setOpen((e) => !e);
 
       setIncrement((prev) => prev + 1);
+      await handleShare(data.data._id, data.data.userId);
       toast.success("Content added successfully");
     } catch (err) {
       console.error("Error adding content:", err);
-      setError("Error adding content");
       toast.error("Error adding content");
     }
   }
 
   async function handleShare(id: string, userId: string) {
-    const tokens = localStorage.getItem("token");
+    try {
+      const tokens = localStorage.getItem("token");
+      console.log("Sharing content with ID:", id, "and userId:", userId);
 
-    const response = await axios.post(
-      `${apiUrl}/api/v1/content/share`,
-      {
-        id: id,
-        userId: userId,
-      },
-      {
-        headers: { Authorization: `Bearer ${tokens}` },
+      const response = await axios.post(
+        `${apiUrl}/api/v1/content/share/`,
+        {
+          id: id,
+          userId: userId,
+        },
+        {
+          headers: { Authorization: `Bearer ${tokens}` },
+        }
+      );
+      console.log("Share response:", response.data);
+      if (response.data && response.data.response && response.data.response.hash) {
+        setShareLink(response.data.response.hash);
+      } else {
+        console.error("Invalid response format:", response.data);
+        toast.error("Could not generate share link");
       }
+    } catch (error) {
+      console.error("Error sharing content:", error);
+      toast.error("Error generating share link");
+    }
+  }
+
+  async function handleCopy(shareLink: string | null) {
+    if (!shareLink) {
+      toast.error("No share link available");
+      return;
+    }
+    await navigator.clipboard.writeText(
+      `${apiFrontend}/api/v1/content/share/${shareLink}`
     );
-    setShareLink(response.data.data.link);
-    setShareOpen((e) => !e);
-    console.log(response.data.data.link, "response.data.data.link");
+    toast.success("Link copied to clipboard");
   }
   return (
     <>
@@ -215,6 +233,7 @@ export default function Home() {
                           <Share2Icon
                             onClick={() => {
                               handleShare(cont._id, cont.userId._id);
+                              setShareOpen((e) => !e);
                             }}
                             className="size-5 cursor-pointer blue-color"
                           />
@@ -295,9 +314,21 @@ export default function Home() {
                   <Label htmlFor="link" className="sr-only">
                     Link
                   </Label>
-                  <Input id="link" value={shareLink!} readOnly />
+                  <Input
+                    id="link"
+                    className="selection:bg-[#5048db]"
+                    value={shareLink ? `${apiFrontend}/api/v1/content/share/${shareLink}` : "Loading share link..."}
+                    readOnly
+                  />
                 </div>
-                <Button type="submit" size="sm" className="px-3">
+                <Button
+                  onClick={() => {
+                    handleCopy(shareLink);
+                  }}
+                  type="submit"
+                  size="sm"
+                  className="px-3"
+                >
                   <span className="sr-only">Copy</span>
                   <Copy />
                 </Button>
