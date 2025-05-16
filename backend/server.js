@@ -60,6 +60,16 @@ app.post("/api/v1/signin", async (req, res) => {
 app.post("/api/v1/content", middleware, async (req, res) => {
   try {
     let { title, link, tags } = req.body
+
+    if (link.includes("https://you")) {
+      link = link.substring(link.lastIndexOf("/") + 1)
+      link = `https://www.youtube.com/embed/${link}`
+    }
+    if (link.includes("https://x.com")) {
+      link = link.substring(link.lastIndexOf("/") + 1)
+      link = `https://twitter.com/hackiice/status/${link}`
+    }
+
     const data = await content.create({
       link: link,
       title: title,
