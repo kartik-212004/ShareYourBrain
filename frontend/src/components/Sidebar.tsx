@@ -1,13 +1,10 @@
-import { Link2, Twitter, FileVideo, File, Tags, Brain } from "lucide-react";
+import { Link2, Twitter, Brain } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
 import { Button } from "./ui/button";
 function Sidebar() {
   const menuItems = [
     { icon: <Twitter className="w-5 h-5" />, label: "Twitter" },
-    { icon: <FileVideo className="w-5 h-5" />, label: "Videos" },
-    { icon: <File className="w-5 h-5" />, label: "Documents" },
-    { icon: <Tags className="w-5 h-5" />, label: "Tags" },
     { icon: <Link2 className="w-5 h-5" />, label: "Links" },
   ];
   const navigate = useNavigate();

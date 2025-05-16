@@ -139,7 +139,6 @@ export default function Home() {
   async function handleShare(id: string, userId: string) {
     try {
       const tokens = localStorage.getItem("token");
-      console.log("Sharing content with ID:", id, "and userId:", userId);
 
       const response = await axios.post(
         `${apiUrl}/api/v1/content/share/`,
@@ -151,8 +150,11 @@ export default function Home() {
           headers: { Authorization: `Bearer ${tokens}` },
         }
       );
-      console.log("Share response:", response.data);
-      if (response.data && response.data.response && response.data.response.hash) {
+      if (
+        response.data &&
+        response.data.response &&
+        response.data.response.hash
+      ) {
         setShareLink(response.data.response.hash);
       } else {
         console.error("Invalid response format:", response.data);
@@ -169,9 +171,7 @@ export default function Home() {
       toast.error("No share link available");
       return;
     }
-    await navigator.clipboard.writeText(
-      `${apiFrontend}/api/v1/content/share/${shareLink}`
-    );
+    await navigator.clipboard.writeText(`${apiFrontend}/shared/${shareLink}`);
     toast.success("Link copied to clipboard");
   }
   return (
@@ -317,7 +317,11 @@ export default function Home() {
                   <Input
                     id="link"
                     className="selection:bg-[#5048db]"
-                    value={shareLink ? `${apiFrontend}/api/v1/content/share/${shareLink}` : "Loading share link..."}
+                    value={
+                      shareLink
+                        ? `${apiFrontend}/shared/${shareLink}`
+                        : "Loading share link..."
+                    }
                     readOnly
                   />
                 </div>
